@@ -30,7 +30,8 @@
 
 	<target name="analyze" depends="jar">
 		<java classname="analyzer.DocAnalyzer">
-			<arg value="Part2/" />
+			<arg value="data/json/" />
+			<!-- <arg value="Part2/" /> -->
 			<!-- <arg value="data/json/stop/" /> -->
 			<!-- <arg value="data/json/test/" /> -->
 
