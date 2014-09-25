@@ -2,3 +2,5 @@ To run
 
 ant jar
 ant analyze
+
+To change the location of data, edit the analyze target in build.xml.
