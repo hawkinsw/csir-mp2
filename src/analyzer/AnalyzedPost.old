@@ -1,0 +1,150 @@
+package analyzer;
+
+import structures.Post;
+import analyzer.WordFrequency;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Arrays;
+
+public class PostAnalyzer
+{
+	public PostAnalyzer(Post p) {
+		m_ID = p.getID();
+		tokenizePost(p);
+	}
+
+	private tokenizePost(Post p) {
+		SnowballStemmer stemmer = new englishStemmer();
+		String tokens[] = null;
+		String normalizedTokens[] = new String[0];
+		ArrayList<String> nonBlankNormalizedTokens = new ArrayList<String>();
+		String stemmedTokens[] = null;
+		Tokenizer tokenizer = null;
+
+		try {
+			tokenizer = new TokenizerME(
+				new TokenizerModel(
+					new FileInputStream("./data/Model/en-token.bin")));
+		} catch (FileNotFoundException fnfe) {
+			System.out.println("Tokenizer model file not found.");
+		} catch (IOException ioe) {
+			System.out.println("Tokenizer model threw exception.");
+		}
+
+		/*
+		 * tokenize.
+		 */
+		tokens = tokenizer.tokenize(p.getTitle() + " " + p.getContent());
+
+		/*
+		 * normalize.
+		 */
+		for (i = 0; i<tokens.length; i++) {
+			String candidateToken = tokens[i]
+				.replaceAll("\\p{Punct}", "")
+				.toLowerCase();
+			if (!candidateToken.equals("")) {
+				nonBlankNormalizedTokens.add(candidateToken);
+			}
+		}
+		normalizedTokens = nonBlankNormalizedTokens.toArray(normalizedTokens);
+		
+		stemmedTokens = new String[tokens.length];
+		for (i = 0; i < normalizedTokens.length; i++) {
+			stemmer.setCurrent(tokens[i]);
+			stemmer.stem();
+			stemmedTokens[i] = stemmer.getCurrent();
+		}
+
+		m_tokens = stemmedTokens;
+	}
+
+	public List<WordFrequency> getFrequency() {
+		if (m_stemmedTokens == null)
+			return null;
+
+		if (m_frequency == null) {
+			int i = 0;
+			m_frequency = new LinkedList<WordFrequency>();
+			/*
+			 * Yes, this is slow!
+			 */
+			String stemmedTokens[] = Arrays.copyOf(m_stemmedTokens, 
+				m_stemmedTokens.length);
+			for (i = 0; i<stemmedTokens.length; i++) {
+				String searchWord = stemmedTokens[i];
+				if (searchWord == null) {
+					continue;
+				}
+				int frequency = 0;
+				int j = 0;
+				for (j = i; j<stemmedTokens.length; j++) {
+					if (searchWord.equals(m_stemmedTokens[j])) {
+						stemmedTokens[j] = null;
+						frequency++;
+					}
+				}
+				m_frequency.add(new WordFrequency(searchWord, frequency));
+			}
+		}
+		return m_frequency;
+	}
+
+	public Post getPost() {
+		return m_post;
+	}
+
+	public void setPost(Post p) {
+		m_post = p;
+	}
+
+	public String getID() {
+		return m_ID;
+	}
+
+	public void setID(String id) {
+		m_ID = id;
+	}
+
+	public String[] getTokens() {
+		return m_tokens;
+	}
+
+	public void setTokens(String tokens[]) {
+		m_tokens = tokens;
+	}
+	
+	public String[] getNormalizedTokens() {
+		return m_normalizedTokens;
+	}
+
+	public void setNormalizedTokens(String normalizedTokens[]) {
+		m_normalizedTokens = normalizedTokens;
+	}
+	
+
+	public String[] getStemmedTokens() {
+		return m_stemmedTokens;
+	}
+
+	public void setStemmedTokens(String stemmedTokens[]) {
+		m_stemmedTokens = stemmedTokens;
+	}
+
+	public boolean equals(Object t) {
+		if (t instanceof PostAnalyzer) {
+			PostAnalyzer oppositePost = (PostAnalyzer)t;
+			return m_ID.equals(oppositePost.getID());
+		} else {
+			return false;
+		}
+	}
+
+	public int hashCode() {
+		return m_ID.hashCode();
+	}
+
+	private String[] m_tokens;
+	private String m_ID;
+	private LinkedList<WordFrequency> m_frequency;
+}

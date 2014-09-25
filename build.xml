@@ -1,0 +1,44 @@
+<project>
+
+	<property name="src" value="src/"/>
+	<property name="bin" value="bin/"/>
+	<property name="build" value="build/"/>
+	<property name="libs" value="libs/"/>
+
+	<path id="classpath">
+		<fileset dir="${libs}" />
+	</path>
+
+	<target name="clean">
+		<delete dir="${build}/classes" includes="**/*.class"/>
+		<delete file="MedForum.jar"/>
+	</target>
+	
+	<target name="build">
+		<mkdir dir="${build}"/>
+		<mkdir dir="${build}/classes"/>
+		<javac srcdir="${src}" destdir="${build}/classes" debug="true">
+			<classpath>
+				<path refid="classpath"/>
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="jar" depends="build">
+		<jar destfile="MedForum.jar" basedir="${build}/classes"/>
+	</target>
+
+	<target name="analyze" depends="jar">
+		<java classname="analyzer.DocAnalyzer">
+			<arg value="Part2/" />
+			<!-- <arg value="data/json/stop/" /> -->
+			<!-- <arg value="data/json/test/" /> -->
+
+			<classpath>
+				<path refid="classpath"/>
+				<pathelement location="MedForum.jar"/>
+			</classpath>
+		</java>
+	</target>
+
+</project>
