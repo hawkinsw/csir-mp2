@@ -1,0 +1,4 @@
+To run
+
+ant jar
+ant analyze
